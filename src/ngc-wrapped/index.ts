@@ -56,6 +56,16 @@ export function runOneBuild(args: string[], inputs?: {[path: string]: string}): 
 
   const {basePath} = ng.calcProjectFileAndBasePath(project);
   const compilerOpts = ng.createNgCompilerOptions(basePath, config, tsOptions);
+
+  // Super Hacky make-it-work-for-now override.
+  compilerOpts.paths['goog:*'] = [
+    'cake/target/build/typescript-definition/closure-library/google-closure-library-modules/a/*',
+    'cake/target/build/typescript-definition/closure-library/google-closure-library-modules/b/*',
+    'bazel-out/k8-fastbuild/genfiles/cake/target/build/typescript-definition/closure-library/google-closure-library-modules/a/*',
+    'bazel-out/k8-fastbuild/genfiles/cake/target/build/typescript-definition/closure-library/google-closure-library-modules/b/*',
+    'bazel-out/k8-fastbuild/bin/cake/target/build/typescript-definition/closure-library/google-closure-library-modules/a/*',
+    'bazel-out/k8-fastbuild/bin/cake/target/build/typescript-definition/closure-library/google-closure-library-modules/b/*',
+  ];
   const tsHost = ts.createCompilerHost(compilerOpts, true);
   const {diagnostics} = compile({
     allowNonHermeticReads: ALLOW_NON_HERMETIC_READS,

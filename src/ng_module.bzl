@@ -37,10 +37,7 @@ def _expected_outs(ctx):
 
     elif src.short_path.endswith(".css"):
       basename = src.short_path[len(ctx.label.package) + 1:-len(".css")]
-      devmode_js = [
-          ".css.shim.ngstyle.js",
-          ".css.ngstyle.js",
-      ]
+      devmode_js = []
       summaries = []
 
     else:
@@ -152,11 +149,15 @@ def ngc_compile_action(ctx, label, inputs, outputs, messages_out, tsconfig_file,
 
   arguments += i18n_args
 
+  for output in outputs:
+    if output.basename.endswith(".es5.MF"):
+      ctx.actions.write(output, content="")
+
   ctx.action(
       progress_message = progress_message,
       mnemonic = mnemonic,
       inputs = inputs,
-      outputs = outputs,
+      outputs = [o for o in outputs if not o.basename.endswith(".es5.MF")],
       arguments = arguments,
       executable = ctx.executable.compiler,
       execution_requirements = {

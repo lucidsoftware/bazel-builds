@@ -37,7 +37,10 @@ def _expected_outs(ctx):
 
     elif src.short_path.endswith(".css"):
       basename = src.short_path[len(ctx.label.package) + 1:-len(".css")]
-      devmode_js = []
+      devmode_js = [
+        ".css.shim.ngstyle.js",
+        ".css.ngstyle.js",
+      ]
       summaries = []
 
     else:
@@ -138,7 +141,9 @@ def ngc_compile_action(ctx, label, inputs, outputs, messages_out, tsconfig_file,
     supports_workers = str(int(ctx.attr._supports_workers))
 
   arguments = (list(_EXTRA_NODE_OPTIONS_FLAGS) +
-               ["--node_options=%s" % opt for opt in node_opts])
+               ["--node_options=%s" % opt for opt in node_opts + [
+                #  "--inspect-brk"
+                ]])
   # One at-sign makes this a params-file, enabling the worker strategy.
   # Two at-signs escapes the argument so it's passed through to ngc
   # rather than the contents getting expanded.

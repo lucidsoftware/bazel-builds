@@ -13,6 +13,10 @@ import * as path from 'path';
 import * as tsickle from 'tsickle';
 import * as ts from 'typescript';
 
+// console.log("TS_VERSION:", ts.version);
+// console.log("TS_PATH:", require.resolve('typescript'));
+// console.log("TSICKLE_PATH:", require.resolve('tsickle'));
+
 const EXT = /(\.ts|\.d\.ts|\.js|\.jsx|\.tsx)$/;
 const NGC_GEN_FILES = /^(.*?)\.(ngfactory|ngsummary|ngstyle|shim\.ngstyle)(.*)$/;
 // FIXME: we should be able to add the assets to the tsconfig so FileLoader
@@ -58,14 +62,18 @@ export function runOneBuild(args: string[], inputs?: {[path: string]: string}): 
   const compilerOpts = ng.createNgCompilerOptions(basePath, config, tsOptions);
 
   // Super Hacky make-it-work-for-now override.
-  compilerOpts.paths['goog:*'] = [
-    'cake/target/build/typescript-definition/closure-library/google-closure-library-modules/a/*',
-    'cake/target/build/typescript-definition/closure-library/google-closure-library-modules/b/*',
-    'bazel-out/k8-fastbuild/genfiles/cake/target/build/typescript-definition/closure-library/google-closure-library-modules/a/*',
-    'bazel-out/k8-fastbuild/genfiles/cake/target/build/typescript-definition/closure-library/google-closure-library-modules/b/*',
-    'bazel-out/k8-fastbuild/bin/cake/target/build/typescript-definition/closure-library/google-closure-library-modules/a/*',
-    'bazel-out/k8-fastbuild/bin/cake/target/build/typescript-definition/closure-library/google-closure-library-modules/b/*',
-  ];
+  compilerOpts.target = ts.ScriptTarget.ES2017;
+  compilerOpts.module = ts.ModuleKind.CommonJS;
+  compilerOpts.annotateForClosureCompiler = true;
+  compilerOpts.downlevelIteration = false;
+  if (compilerOpts.paths && !compilerOpts.paths['goog:*']) {
+      compilerOpts.paths['goog:*'] = [
+          'external/closure_types/google-closure-library-modules/a/*',
+          'external/closure_types/google-closure-library-modules/b/*',
+      ];
+  }
+  // console.log(JSON.stringify(compilerOpts));
+  // console.log(JSON.stringify(bazelOpts));
   const tsHost = ts.createCompilerHost(compilerOpts, true);
   const {diagnostics} = compile({
     allowNonHermeticReads: ALLOW_NON_HERMETIC_READS,
